@@ -1,11 +1,12 @@
 import { NordDark } from "@/constants/theme";
+import { ElementsProvider } from "@/store/ElementContext";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   return (
-    <>
+    <ElementsProvider>
       <StatusBar style="light" backgroundColor={NordDark.background} />
       <Stack 
         screenOptions={{
@@ -29,6 +30,6 @@ export default function RootLayout() {
         <Stack.Screen name="edit-element" options={{ title: "Edit Element" }} />
       </Stack>
       <Toast />
-    </>
+    </ElementsProvider>
   );
 }

@@ -2,6 +2,7 @@ import { NordDark } from "@/constants/theme";
 import showAlert from "@/lib/AlertCustom";
 import Database from "@/lib/Database";
 import Element from "@/lib/Element";
+import { useElements } from "@/store/ElementContext";
 import { globalStyles } from "@/styles/globalStyles";
 import * as Clipboard from 'expo-clipboard';
 import { File } from "expo-file-system";
@@ -12,6 +13,8 @@ import { Dimensions, Platform, Pressable, Text, TextInput, View } from "react-na
 import Toast from 'react-native-toast-message';
 
 export default function EditElementScreen() {
+  const { state, dispatch } = useElements();
+
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
@@ -47,10 +50,36 @@ export default function EditElementScreen() {
       
       const db = await Database.getInstance();
       await db.updateElement(element);
+
+      dispatch({
+        type: "update",
+        payload: element
+      });
       
       showAlert("Updated", "Element was updated", () => router.back());
     } catch (_) {
       showAlert("Error", "Could not update element", () => router.back());
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      if (!element || element.getId() === null) {
+        return;
+      }
+      
+      const db = await Database.getInstance();
+
+      await db.deleteElement(element.getId()!);
+
+      dispatch({
+        type: "set",
+        payload: state.elements.filter(e => e.getId() === element.getId())
+      });
+      
+      showAlert("Updated", "Element was deleted", () => router.back());
+    } catch (_) {
+      showAlert("Error", "Could not delete element", () => router.back());
     }
   }
 
@@ -124,6 +153,12 @@ export default function EditElementScreen() {
           onPress={handleUpdate}
         >
           <Text style={{...globalStyles.buttonText, color: NordDark.success}}>Update</Text>
+        </Pressable>
+        <Pressable
+          style={{...globalStyles.button, borderColor: NordDark.error}}
+          onPress={handleDelete}
+        >
+          <Text style={{...globalStyles.buttonText, color: NordDark.error}}>Delete</Text>
         </Pressable>
       </View>
     </View>

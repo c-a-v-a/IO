@@ -5,14 +5,15 @@ import Database from "@/lib/Database";
 import Element from "@/lib/Element";
 import { OrderingEnum, OrderingLabels } from "@/lib/OrderingEnum";
 import QueryParams from "@/lib/QueryParams";
+import { useElements } from "@/store/ElementContext";
 import { globalStyles } from "@/styles/globalStyles";
 import { Picker } from "@react-native-picker/picker";
-import { useFocusEffect } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, TextInput, View } from "react-native";
 
-export default function AddImageScreen() {
-  const [elements, setElements] = useState<Element[]>([]);
+export default function SearchImagesScreen() {
+  const { state, dispatch } = useElements();
+
   const [nameFilter, setNameFilter] = useState("");
   const [tagFilter, setTagFilter] = useState("");
   const [order, setOrder] = useState(OrderingEnum.CREATED_AT_DESC);
@@ -21,13 +22,8 @@ export default function AddImageScreen() {
     loadElements();
   }, [nameFilter, order, tagFilter]);
 
-  useFocusEffect(() => {
-    loadElements();
-  });
-
   const loadElements = async () => {
     try {
-
       const params: QueryParams = { order: order };
       
       if (nameFilter && nameFilter.trim().length > 0) {
@@ -37,7 +33,10 @@ export default function AddImageScreen() {
       const db = await Database.getInstance();
       const data = await db.getElements(params);
       
-      setElements(filterElements(data));
+      dispatch({
+        type: "set",
+        payload: filterElements(data)
+      });
     } catch (_) {
       showAlert("Error", "Unable to show elements");
     }
@@ -90,7 +89,7 @@ export default function AddImageScreen() {
       </Picker>
 
       <FlatList 
-        data={elements}
+        data={state.elements}
         keyExtractor={(_, index) => index.toString()}
         numColumns={2}
         renderItem={({ item }) => <ElementCard element={item} />}

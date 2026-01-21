@@ -146,4 +146,15 @@ export default class Database {
       element.uri
     );
   }
+
+  public async deleteElement(id: number): Promise<void> {
+    if (!this.db) {
+      await this.init();
+    }
+
+    await this.db!.runAsync(
+      `DELETE FROM elements WHERE id = ?`,
+      [id]
+    );
+  }
 }
